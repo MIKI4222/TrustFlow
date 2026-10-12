@@ -1,0 +1,12 @@
+[build]
+  command = "npm run build"
+  publish = "out"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# Static export: every route is a prerendered HTML file; fallback keeps deep links safe.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
