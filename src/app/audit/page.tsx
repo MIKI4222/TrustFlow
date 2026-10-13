@@ -23,7 +23,7 @@ export default function Audit() {
     <h2 className="font-semibold">Escrow deals & AI verdicts — live from chain</h2>
     {deals.map((d) => <div key={d.id} className="card text-sm">Deal #{d.id} · {d.status} · {d.description}{d.verdict && <div className="mt-1 text-emerald-400">AI verdict: {d.verdict}</div>}{raw(d.raw)}</div>)}
     <h2 className="font-semibold">Transactions sent from this browser</h2>
-    {!log.length && <p className="text-sm text-slate-500">Пока нет.</p>}
+    {!log.length && <p className="text-sm text-slate-500">None yet.</p>}
     {log.map((e, i) => (
       <details key={i} className="card"><summary className="cursor-pointer text-sm">
         {new Date(e.ts).toLocaleString()} · {e.contract}.{e.fn} · <span className={e.status === "accepted" ? "text-emerald-400" : "text-red-400"}>{e.status}</span>

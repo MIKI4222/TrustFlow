@@ -27,7 +27,7 @@ export default function SlaGuard() {
   const esc = (c: any) => "/escrow/?" + new URLSearchParams({ claim: String(c.id), incident: String(c.incident_id), url: String(c.target_url), status: String(c.status), code: String(c.status_code) });
   return <>
     <h1 className="text-2xl font-bold">SLA Guard Center</h1>
-    <p className="text-sm text-slate-500">Вердикт строится по реальному HTTP-ответу, который запрашивают валидаторы (5xx / маркеры сбоя / недоступность). Регистрация сервисов и пополнение фонда доступны владельцу контракта; клиент подписывается и подаёт claim.</p>
+    <p className="text-sm text-slate-500">The verdict is based on the real HTTP response that validators fetch (5xx / failure markers / unreachable). Registering services and funding the pool is owner-only; clients subscribe and file claims.</p>
     <div className="card space-y-3">
       <h2 className="font-semibold">Service & fund (owner)</h2>
       <input className="inp" value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://service.example/health" />
@@ -47,7 +47,7 @@ export default function SlaGuard() {
             <button className="btn" onClick={() => run("report_outage", [u])}>Trigger Health Check</button>
           </div>
         </div>); })}
-      {!services.length && <p className="text-sm text-slate-500">Нет зарегистрированных сервисов.</p>}
+      {!services.length && <p className="text-sm text-slate-500">No services registered yet.</p>}
     </div>
     <h2 className="text-lg font-semibold">Claims (on-chain)</h2>
     {claims.map((c: any) => (

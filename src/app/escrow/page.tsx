@@ -32,8 +32,8 @@ export default function Escrow() {
   };
   return <>
     <h1 className="text-2xl font-bold">AI Arbitration Escrow</h1>
-    <p className="rounded-lg border border-amber-700/50 bg-amber-950/30 p-3 text-xs text-amber-200">Контракт фиксирует сделку, доказательства и ИИ-вердикт on-chain; сумма <code>amount</code> — учётное значение, контракт не удерживает токены. Доказательства — URL статических страниц (SPA валидаторы могут не прочитать).</p>
-    {from && <p className="card text-sm text-indigo-300">Сделка создаётся из SLA-инцидента: {from}</p>}
+    <p className="rounded-lg border border-amber-700/50 bg-amber-950/30 p-3 text-xs text-amber-200">The contract records the deal, evidence and the AI verdict on-chain; <code>amount</code> is a bookkeeping value and the contract does not hold tokens. Evidence must be URLs of static pages (validators may not be able to read SPAs).</p>
+    {from && <p className="card text-sm text-indigo-300">Deal created from SLA incident: {from}</p>}
     <div className="card space-y-3">
       <h2 className="font-semibold">Create deal</h2>
       <input className="inp" placeholder="Freelancer address 0x…" value={f.freelancer} onChange={(e) => setF({ ...f, freelancer: e.target.value })} />
