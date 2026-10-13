@@ -1,5 +1,8 @@
 # TrustFlow B2B — submission notes (GenLayer Portal: Projects)
 
+- Source code: https://github.com/MIKI4222/TrustFlow
+- Live demo: <!-- add Netlify URL after deploy -->
+
 **What it does.** Frontend platform over two deployed Intelligent Contracts on Bradbury: SLA Guard (`0xF05D822Bd4c2F18b8452ce6086f77070CAdfbE10`) and AI Arbitration Escrow (`0xaDC75AeC2155a4d07aBc38B6356B6dfF58f8c6fb`). Contracts are unchanged.
 
 **Problem.** In B2B, "did the service really fail?" and "was the work really delivered?" are settled by the party that benefits or by a paid intermediary.

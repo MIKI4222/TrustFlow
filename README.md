@@ -62,8 +62,8 @@ Write calls are signed with MetaMask / any EVM wallet through `genlayer-js`. The
 Requirements: Node.js 20+, a wallet with Bradbury testnet GEN.
 
 ```bash
-git clone <this-repo>
-cd trustflow-b2b
+git clone https://github.com/MIKI4222/TrustFlow.git
+cd TrustFlow
 npm install
 cp .env.example .env.local
 npm run dev        # http://localhost:3000
