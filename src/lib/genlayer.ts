@@ -2,7 +2,7 @@ import { createClient } from "genlayer-js";
 import { testnetBradbury } from "genlayer-js/chains";
 
 export const SLA = (process.env.NEXT_PUBLIC_SLA_GUARD_ADDRESS || "0xF05D822Bd4c2F18b8452ce6086f77070CAdfbE10") as `0x${string}`;
-export const ESC = (process.env.NEXT_PUBLIC_ESCROW_ADDRESS || "0xaDC75AeC2155a4d07aBc38B6356B6dfF58f8c6fb") as `0x${string}`;
+export const ESC = (process.env.NEXT_PUBLIC_ESCROW_ADDRESS || "0xE6f098D1B49d67390bFec8C8169aeFd99868878f") as `0x${string}`;
 export const EXPLORER = "https://explorer-bradbury.genlayer.com";
 const endpoint = process.env.NEXT_PUBLIC_GENLAYER_RPC_URL || undefined;
 const cfg = (extra: object = {}) => ({ chain: testnetBradbury, ...(endpoint ? { endpoint } : {}), ...extra });
@@ -11,7 +11,8 @@ export type Stage = "idle" | "broadcast" | "consensus" | "reasoning" | "success"
 export type AuditEntry = { ts: number; contract: string; fn: string; hash?: string; status: string; raw: string };
 
 const ser = (v: any) => JSON.stringify(v, (_, x) => (typeof x === "bigint" ? x.toString() : x), 2);
-export const parse = (v: any) => { if (typeof v === "string") { try { return JSON.parse(v); } catch { return v; } } return v; };
+import { parse, normDeal } from "./api";
+export { parse, normDeal };
 
 export async function connectWallet(): Promise<string> {
   const eth = (window as any).ethereum;
@@ -34,15 +35,6 @@ export function logAudit(e: AuditEntry) {
 const OK = ["ACCEPTED", "FINALIZED"];
 const FAIL = ["UNDETERMINED", "CANCELED", "LEADER_TIMEOUT", "VALIDATORS_TIMEOUT"];
 const stageOf = (n: string): Stage => OK.includes(n) ? "success" : FAIL.includes(n) ? "reverted" : ["PROPOSING", "COMMITTING", "REVEALING"].includes(n) ? "reasoning" : "consensus";
-
-// Normalizes deal records: tolerates different field naming in the deployed escrow contract.
-export function normDeal(id: number, d: any) {
-  const g = (...k: string[]) => { for (const x of k) if (d?.[x] !== undefined && d?.[x] !== "") return d[x]; return ""; };
-  return { id, raw: d, status: String(g("status", "state")), client: String(g("client")), freelancer: String(g("freelancer")), description: String(g("description")),
-    amount: String(g("amount")), cUrl: String(g("client_evidence_url", "client_evidence")), cClaim: String(g("client_claim")),
-    fUrl: String(g("freelancer_evidence_url", "freelancer_evidence")), fClaim: String(g("freelancer_claim")),
-    verdict: String(g("resolution", "reasoning", "resolution_reasoning", "verdict", "winner")) };
-}
 
 export async function write(address: string, fn: string, args: any[], account: string, onStage: (s: Stage, detail?: string) => void, value = 0n) {
   const name = address.toLowerCase() === SLA.toLowerCase() ? "SLA Guard" : "Escrow";
