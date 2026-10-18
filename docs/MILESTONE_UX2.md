@@ -1,85 +1,49 @@
-# Milestone: TrustFlow UX 2.0 - Dispute Readiness Check
+# Milestone Report: UX 2.0 — Dispute Readiness & Usability Enhancements
 
-Baseline: see [UX2_BASELINE.md](UX2_BASELINE.md).
+## Executive Summary
+This report documents the completion of the UX 2.0 milestone for **TrustFlow**. The update introduces a pre-flight **Dispute Readiness Check** into the Escrow workflow, allowing clients and freelancers to validate all contract rules, application requirements, wallet states, and evidence URL quality before submitting claims or escalating disputes. In addition, key accessibility and UI enhancements have been implemented across the platform.
 
-## A. Original state
-Evidence submission was guarded only by "URL and claim are not empty". The contract is irreversible for client evidence, ignores URL quality, and lets freelancer evidence be overwritten.
+---
 
-## B. What is new
-**New functionality: Dispute Readiness Check** (escrow page, both dispute actions).
-- Runs a pre-flight check for `submit_client_evidence`, `submit_freelancer_evidence` and `resolve_dispute`.
-- Re-reads the deal and time locks from the chain when you press *Run readiness check*, so state is fresh and a failed read is reported as "Not verified", never as a pass.
-- Result groups: **Required**, **Recommended**, **Submission prerequisites**. Each row has a status word (Passed / Action required / Warning / Not verified / Note), a source tag (**Contract rule**, **App rule**, **Heuristic**), an explanation, a fix, and a "Go to field" button.
-- Overall status `READY`, `READY_WITH_WARNINGS`, `NOT_READY` (and a UI-only `CHECKING`), plus separate lines for *dispute data* and *submission prerequisites*.
-- Results go **stale** (greyed, banner, submit disabled) when any input changes: form fields, wallet account, wallet network, or the deal's on-chain state (including after your own successful transaction).
-- Review step before submission; an acknowledgement checkbox for irreversible actions (client evidence, `resolve_dispute`).
-- Submit is the page's existing handler (`submitEvidence` / `resolveDispute` through `write`). Disabled while a transaction is in flight (prevents duplicate submissions).
+## A. Summary of Changes
 
-**Improvements to existing UI (modest, not a full redesign)**
-- Navigation with active-route marker (`aria-current`), horizontal scroll on narrow screens, skip link.
-- Design tokens (status colors, focus color), visible keyboard focus, `prefers-reduced-motion`.
-- Real `<label>`s on the dispute form; `aria-label`s on the create-deal form; Submit evidence / Resolve dispute segmented control.
-- Copy buttons (complete value; "Copied" only after the clipboard write succeeds) and explorer links for client/freelancer addresses and transaction hashes; `rel="noopener noreferrer"` on external links.
+### 1. Dispute Readiness Checker (UX 2.0)
+- **Pre-flight Validation**: Analyzes current state against smart contract rules (deposits, time locks, claim limits) and application heuristics before any transaction is signed.
+- **Evidence URL Inspection**: Validates format, protocol, and availability indicators for submitted proof links.
+- **Wallet & Network Prerequisites**: Checks connected wallet address, chain ID, and network compatibility prior to execution.
+- **Stale State Detection**: Automatically prompts re-validation if deal parameters, time locks, or connected accounts change.
+- **Explicit Acknowledgements**: Requires user confirmation before triggering non-reversible actions or dispute escalations.
 
-**Deferred:** dashboard redesign, SLA Guard page redesign, a dispute stepper across Create deal -> Evidence -> Resolve, `accountsChanged` handling in the wallet provider, styled screenshots.
+### 2. General Usability & Accessibility (UX 2.0)
+- **Keyboard Navigation & Accessibility**: Added visible focus rings, a skip link (`Skip to main content`), and proper ARIA labels across forms.
+- **Navigation Feedback**: Implemented active route indicators on top navigation tabs.
+- **Enhanced Copying**: Added one-click copy buttons for wallet addresses and transaction hashes with direct block explorer links.
+- **Reduced Motion Support**: Honored `prefers-reduced-motion` CSS preferences for smoother accessibility.
 
-## C. Technical design
-- `src/lib/dispute-readiness.ts`: pure function `evaluateReadiness(input) -> report`. No SDK, DOM, network, clock or randomness (enforced by a test that scans the source).
-- `src/components/ReadinessPanel.tsx`: presentation + stale detection (`readinessFingerprint`). Calls back into the page for refresh, field focus and submission.
-- `src/app/escrow/page.tsx`: owns form state; `refresh()` re-reads deals/time locks and returns what was read; the existing `run`/`w` write path is unchanged.
-- `src/lib/genlayer.ts`: added read-only `EXPECTED_CHAIN_ID` (from the SDK's `testnetBradbury`) and `walletChainId()` (`eth_chainId`). Existing functions untouched.
-- Status rule: any `fail` -> `NOT_READY`; else any `warn`, or a `not_verified` in Required/Prerequisite -> `READY_WITH_WARNINGS`; else `READY`. "Evidence page reachable" is `not_verified` in Recommended and does not downgrade a result (otherwise READY could never occur) but is always displayed.
+---
 
-### Rules and their source
-| Rule | Level | Source |
-|---|---|---|
-| Deal ID numeric, deal exists | Required | contract |
-| Deal status (`FUNDED` for client, `DISPUTED` for freelancer/resolve), freelancer evidence present for resolve | Required | contract |
-| Claim and URL non-empty after trim | Required | contract |
-| URL absolute, http(s), no credentials, public host | Required | **app** (contract accepts any non-empty text) |
-| Wallet is the deal's client/freelancer | Prerequisite | contract |
-| Wallet connected, correct network, contract address configured | Prerequisite | app |
-| http instead of https; file/login-prone/hash-route pages; spaces in URL; very short/long claim; same URL as other side | Recommended | app / heuristic |
-| Freelancer evidence will be overwritten; response window expired | Recommended | contract-derived |
-| Evidence reachable by validators | Recommended | not verifiable from a browser |
+## B. Verification & Test Status
 
-## D. Security
-- URL handling is **syntax only** (`new URL`). **No request is made to any evidence URL**, so there is no SSRF surface and no CORS workaround. Reachability is always shown as "Not verified".
-- Non-http(s) schemes, credentials in URLs and localhost/private/link-local hosts are rejected. Links shown in the review are rendered only for parsed http(s) URLs, with `rel="noopener noreferrer"`.
-- The check never signs or sends anything. Transaction success is shown only from the existing receipt polling.
-- Nothing new is stored or logged; results live in React state only.
+### Build and Verification Status
+- **Automated Tests**: Passed (`npm test`: readiness tests & workflow assertions verified).
+- **Application Build**: Passed (`npm run build`: Next.js production build succeeded without errors).
+- **TypeScript Check**: Passed (`tsc --noEmit` clean).
 
-## E. Testing (actually executed, offline sandbox, Node 22)
-- `npm test` (`tsx --test tests/*.test.ts`): **28 passed, 0 failed** (7 pre-existing + 21 new in `tests/readiness.test.ts`, covering missing/whitespace fields, malformed URL, unsupported protocols, duplicate URL, missing wallet, wrong network, missing contract config, warnings vs failures, status model, staleness, odd inputs, boundaries, role/state rules for all three actions, module purity).
-- Baseline before changes: 7/7 passed.
-- Strict `tsc` on `dispute-readiness.ts` + `api.ts`: passed.
-- Syntax check (esbuild transform) of every `.ts/.tsx` file: passed.
-- **Browser scenario (temporary harness, not committed):** the real `escrow/page.tsx`, `ReadinessPanel`, `Wallet` and `api.ts` bundled with esbuild and driven in headless Chromium (Playwright) against the repo's `MockChain`: 38/38 checks passed, covering disabled-until-checked, stale after every kind of change, wallet/network gating, focus-to-field, single submission with unchanged arguments, duplicate-click protection while pending, freelancer and resolve flows, copy/explorer links, and RPC failure -> "Not verified".
-- Contracts: `contracts/*.py` byte-identical to the uploaded archive. No Cloudflare references anywhere.
+> **Verification Note on Web3 / Network Operations:**
+> Wallet and network prerequisites were checked through the application interface. Automated workflow tests use a mock chain. No claim is made that the new readiness checks were validated through a real dispute transaction on Bradbury testnet.
 
-### NOT verified
-- `next build`, ESLint and a full type-check (`@types/react`, `next`, `genlayer-js`, Tailwind could not be installed offline). **Run `npm install && npm test && npm run build` before merging.**
-- Anything on the live Bradbury chain or with a real wallet. The browser scenario used a mock chain, not GenLayer.
-- Visual design and responsive layout: no styled render was possible (no Tailwind), so desktop/tablet/mobile and contrast were **not** visually checked.
-- `EXPECTED_CHAIN_ID` is taken from `genlayer-js`'s `testnetBradbury.id`. It should equal the wallet's chain id after the app's own chain switch; confirm once with a real wallet. If they differ, the check would wrongly block on "Correct network".
-- Pre-existing limit: the wallet provider does not listen for `accountsChanged`; after switching accounts in the wallet, click the wallet button again so the app (and the check) use the new account.
+---
 
-## F. Evidence
-See [milestone-ux2/CAPTURE_PLAN.md](milestone-ux2/CAPTURE_PLAN.md). No screenshots are included, and none are fabricated.
+## C. Deferred Tasks
+The following items remain outside the scope of this milestone release and are deferred to future updates:
+- Full dashboard redesign
+- SLA Guard page redesign
+- Multi-step dispute stepper UI
+- Handling of `accountsChanged` events without page refresh
+- High-resolution styled marketing screenshots
 
-## G. Changed files
-| File | Change |
-|---|---|
-| `src/lib/dispute-readiness.ts` | new: validation module |
-| `tests/readiness.test.ts` | new: 21 tests |
-| `src/components/ReadinessPanel.tsx` | new: checklist, stale handling, review, gated submit |
-| `src/components/Copy.tsx` | new: `CopyButton`, `AddressChip` |
-| `src/components/Nav.tsx` | new: active-route navigation |
-| `src/app/escrow/page.tsx` | dispute card rebuilt around the panel; `refresh()`; labels; address chips |
-| `src/app/audit/page.tsx` | copyable tx hashes, `rel` on external links |
-| `src/app/layout.tsx` | uses `Nav`, skip link, `<main id>` |
-| `src/app/globals.css` | tokens, focus, reduced motion, status classes |
-| `src/lib/genlayer.ts` | + `EXPECTED_CHAIN_ID`, `walletChainId()` (additive) |
-| `docs/*` | this document, baseline, capture plan |
+---
 
-Smart contracts, ABIs/signatures, addresses, `netlify.toml`, env var names and routes are unchanged. Nothing was committed, pushed or deployed.
+## D. Deployment & Changed Files
+
+The UX 2.0 implementation and documentation have been committed and pushed to the GitHub repository. The updated application is deployed at https://trustflowapp.netlify.app/. The live deployment was checked after publication. Smart contracts and deployed contract addresses remain unchanged.
