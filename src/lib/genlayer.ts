@@ -7,6 +7,15 @@ export const EXPLORER = "https://explorer-bradbury.genlayer.com";
 const endpoint = process.env.NEXT_PUBLIC_GENLAYER_RPC_URL || undefined;
 const cfg = (extra: object = {}) => ({ chain: testnetBradbury, ...(endpoint ? { endpoint } : {}), ...extra });
 
+// Chain id this app targets (from the SDK's own chain definition) and the wallet's current chain id.
+// Read-only helpers for the Dispute Readiness Check; they never send requests that change state.
+export const EXPECTED_CHAIN_ID: number | null = (() => { const id = (testnetBradbury as any)?.id; return typeof id === "number" ? id : null; })();
+export async function walletChainId(): Promise<number | null> {
+  const eth = (typeof window !== "undefined" ? (window as any).ethereum : undefined);
+  if (!eth) return null;
+  try { const n = parseInt(await eth.request({ method: "eth_chainId" }), 16); return Number.isFinite(n) ? n : null; } catch { return null; }
+}
+
 export type Stage = "idle" | "broadcast" | "consensus" | "reasoning" | "success" | "reverted";
 export type AuditEntry = { ts: number; contract: string; fn: string; hash?: string; status: string; raw: string };
 

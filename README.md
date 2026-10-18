@@ -63,6 +63,10 @@ Write calls are signed with MetaMask / any EVM wallet through `genlayer-js`. The
 - Evidence URLs should be static or server-rendered pages; client-side SPAs may not be readable by validators.
 - The local transaction log lives in your browser's `localStorage`.
 
+## Dispute Readiness Check (UX 2.0)
+
+Before submitting evidence or resolving a dispute, the Escrow page runs a pre-flight check of your input, the deal's current on-chain state and your wallet/network. It sends no transaction and is not a guarantee of the outcome. Details and limits: [docs/MILESTONE_UX2.md](docs/MILESTONE_UX2.md).
+
 ## Tests
 
 ```bash

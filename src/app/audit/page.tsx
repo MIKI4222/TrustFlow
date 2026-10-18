@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { ExternalLink } from "lucide-react";
 import { EXPLORER, SLA, ESC, AuditEntry, read } from "@/lib/genlayer";
+import { AddressChip } from "@/components/Copy";
 import { getClaims, getDeals, winnerOf, Deal } from "@/lib/api";
 export default function Audit() {
   const [log, setLog] = useState<AuditEntry[]>([]);
@@ -18,8 +19,8 @@ export default function Audit() {
   return <>
     <h1 className="text-2xl font-bold">Explorer & Audit Logs</h1>
     <div className="flex gap-3 text-sm">
-      <a className="btn2" target="_blank" href={`${EXPLORER}/address/${SLA}`}>SLA Guard <ExternalLink size={12} /></a>
-      <a className="btn2" target="_blank" href={`${EXPLORER}/address/${ESC}`}>Escrow <ExternalLink size={12} /></a>
+      <a className="btn2" target="_blank" rel="noopener noreferrer" href={`${EXPLORER}/address/${SLA}`}>SLA Guard <ExternalLink size={12} /></a>
+      <a className="btn2" target="_blank" rel="noopener noreferrer" href={`${EXPLORER}/address/${ESC}`}>Escrow <ExternalLink size={12} /></a>
     </div>
     {errs.map((e, i) => <p key={i} className="rounded-lg border border-red-800 bg-red-950/40 p-3 text-sm text-red-300">Read error: {e}</p>)}
     <h2 className="font-semibold">SLA claims — live from chain (latest 100)</h2>
@@ -31,7 +32,7 @@ export default function Audit() {
     {log.map((e, i) => (
       <details key={i} className="card"><summary className="cursor-pointer text-sm">
         {new Date(e.ts).toLocaleString()} · {e.contract}.{e.fn} · <span className={e.status === "accepted" ? "text-emerald-400" : "text-red-400"}>{e.status}</span>
-        {e.hash && <> · <a className="text-indigo-400" target="_blank" href={`${EXPLORER}/tx/${e.hash}`}>{e.hash.slice(0, 10)}…</a></>}
+        {e.hash && <> · <AddressChip value={e.hash} kind="tx" /></>}
       </summary><pre className="mt-3 max-h-80 overflow-auto text-xs">{e.raw}</pre></details>))}
   </>;
 }

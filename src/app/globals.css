@@ -4,3 +4,30 @@ body { @apply bg-slate-950 text-slate-200; }
 .inp { @apply w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm outline-none focus:border-indigo-500; }
 .btn { @apply inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium hover:bg-indigo-500 disabled:opacity-40; }
 .btn2 { @apply inline-flex items-center gap-1 rounded-lg border border-slate-700 px-3 py-1.5 text-xs hover:bg-slate-800 disabled:opacity-40; }
+
+/* ---- UX 2.0 design tokens (status colors are never the only signal: every status also has an icon + text) ---- */
+:root {
+  --tf-ok: #34d399;
+  --tf-warn: #fbbf24;
+  --tf-err: #f87171;
+  --tf-info: #94a3b8;
+  --tf-focus: #a5b4fc;
+}
+.chk-pass { color: var(--tf-ok); }
+.chk-warn { color: var(--tf-warn); }
+.chk-fail { color: var(--tf-err); }
+.chk-info { color: var(--tf-info); }
+.inp-error { border-color: var(--tf-err) !important; }
+.field-label { @apply mb-1 block text-xs font-medium text-slate-400; }
+.field-error { @apply mt-1 text-xs; color: var(--tf-err); }
+.seg { @apply inline-flex rounded-lg border border-slate-700 p-0.5 text-xs; }
+.seg button { @apply rounded-md px-3 py-1.5 text-slate-400 hover:text-white; }
+.seg button[aria-pressed="true"] { @apply bg-slate-800 font-medium text-white; }
+
+/* Visible keyboard focus everywhere (inputs previously hid the outline). */
+:focus-visible { outline: 2px solid var(--tf-focus); outline-offset: 2px; }
+.inp:focus-visible { outline: 2px solid var(--tf-focus); outline-offset: 1px; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+}
